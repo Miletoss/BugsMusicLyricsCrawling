@@ -1,0 +1,114 @@
+import requests
+from bs4 import BeautifulSoup
+
+### INPUT ###
+# G Dragon = 7570 / 정재현 = 1529 / 바다 = 1801 / 10CM = 80067149 / 스윗소로우 = 80013567 / 이적 = 328 / 싸이 = 3572
+input_artistId = 3572
+input_fileName = "싸이"
+
+fi = open(input_fileName + ".txt", 'w', encoding="UTF8")
+fi.close()
+#############
+
+def FileIO(message):
+    global input_fileName
+    f = open(input_fileName + ".txt", 'a', encoding="UTF8")
+    f.write(message)
+    f.close()
+
+def TrackToLyric(trackId):
+    lyrics = []
+    url = "https://music.bugs.co.kr/track/" + str(trackId)
+    response = requests.get(url)
+    
+    html = response.text
+    soup = BeautifulSoup(html, 'html.parser')
+    requst_lyrics = soup.select("div.lyricsContainer")
+    
+    for i in requst_lyrics:
+        s = ""
+        if(i.xmp != None):
+            lyrics.append(i.xmp.get_text())
+            s = s + str(lyrics[0])
+            FileIO(s)
+        else:
+            print("해당 노래에는 가사가 없음")
+        
+    #FileIO(s)
+
+def AlbumToTrack(albumId):
+    tracks = []
+    num_track = 0
+    url = "https://music.bugs.co.kr/album/" + str(albumId)
+    response = requests.get(url)
+    
+    html = response.text    
+    soup = BeautifulSoup(html, 'html.parser')    
+    requst_tracks = soup.find(id = "ALBUMTRACK" + str(albumId)).find('table').find_all('td', class_="check")
+    #print(requst_tracks)
+    
+    for i in requst_tracks:
+        tracks.append((int(i.find('input').attrs['value'])))
+        num_track = num_track+1
+        
+    for j in range(0, num_track):
+        print("Track - " + str(j+1))
+        TrackToLyric(tracks[j])
+    
+
+def ArtistToAlbum(artistId):
+    albums = []
+    _temp = []
+    num_album = 0
+    num_temp = 0
+    url_Regular = "https://music.bugs.co.kr/artist/" + str(artistId) + "/albums"
+    response_Regular = requests.get(url_Regular)
+    html_Regular = response_Regular.text    
+    soup_Regular = BeautifulSoup(html_Regular, 'html.parser')
+
+    requst_albumsRegular = soup_Regular.find(class_ = "list tileView albumList").find_all('div', class_="albumTitle")
+    #print(requst_albumsRegular)
+    
+    for i in requst_albumsRegular:
+        s_2 = ""
+        s2 = ""
+        #print(i.find_next_sibling('div').find('a'))
+        if(i.find_next_sibling('div').find('a') != None):
+            _temp.append(i.find_next_sibling('div').find('a').attrs['href'])
+            s_2 = s_2 + str(_temp[num_temp])
+            #s_2 = s_2[32:]
+            #s_2 = s_2[:-21]
+            #print("checking Artist..." + str(s_2))
+            _temp[num_temp] = s_2
+            #if(_temp[num_temp] == str(artistId)):
+            if(_temp[num_temp].find(str(artistId))):
+                albums.append(i.find('a').attrs['href'])
+                s2 = s2 + str(albums[num_album])
+                s2 = s2[31:]
+                s2 = s2[:-21]
+                albums[num_album] = s2
+                num_album = num_album+1
+                num_temp = num_temp+1
+            else:
+                print("아티스트 명의의 앨범이 아님 (Featuring 또는 부분 참여)")
+        else:
+            print("정규 앨범이 아님 (Various Artist)")
+        
+    #print(albums)
+    for j in range(0, num_album):
+        print("###Album - " + str(j+1))
+        AlbumToTrack(albums[j])
+           
+    
+    #url_Single = "https://music.bugs.co.kr/artist/" + str(artistId) + "/albums?group=SINGLE"
+    #response_Single = requests.get(url_Single)
+    #html_Single = response_Single.text    
+    #soup_Single = BeautifulSoup(html_Single, 'html.parser')
+    
+
+### MAIN ###
+ArtistToAlbum(input_artistId)
+#ArtistToAlbum(1529)
+#AlbumToTrack(386327)
+#TrackToLyric(3185825)
+############
