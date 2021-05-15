@@ -33,8 +33,6 @@ def TrackToLyric(trackId):
             FileIO(s)
         else:
             print("해당 노래에는 가사가 없음")
-        
-    #FileIO(s)
 
 def AlbumToTrack(albumId):
     tracks = []
@@ -45,7 +43,6 @@ def AlbumToTrack(albumId):
     html = response.text    
     soup = BeautifulSoup(html, 'html.parser')    
     requst_tracks = soup.find(id = "ALBUMTRACK" + str(albumId)).find('table').find_all('td', class_="check")
-    #print(requst_tracks)
     
     for i in requst_tracks:
         tracks.append((int(i.find('input').attrs['value'])))
@@ -67,20 +64,14 @@ def ArtistToAlbum(artistId):
     soup_Regular = BeautifulSoup(html_Regular, 'html.parser')
 
     requst_albumsRegular = soup_Regular.find(class_ = "list tileView albumList").find_all('div', class_="albumTitle")
-    #print(requst_albumsRegular)
     
     for i in requst_albumsRegular:
         s_2 = ""
         s2 = ""
-        #print(i.find_next_sibling('div').find('a'))
         if(i.find_next_sibling('div').find('a') != None):
             _temp.append(i.find_next_sibling('div').find('a').attrs['href'])
             s_2 = s_2 + str(_temp[num_temp])
-            #s_2 = s_2[32:]
-            #s_2 = s_2[:-21]
-            #print("checking Artist..." + str(s_2))
             _temp[num_temp] = s_2
-            #if(_temp[num_temp] == str(artistId)):
             if(_temp[num_temp].find(str(artistId))):
                 albums.append(i.find('a').attrs['href'])
                 s2 = s2 + str(albums[num_album])
@@ -93,17 +84,10 @@ def ArtistToAlbum(artistId):
                 print("아티스트 명의의 앨범이 아님 (Featuring 또는 부분 참여)")
         else:
             print("정규 앨범이 아님 (Various Artist)")
-        
-    #print(albums)
+            
     for j in range(0, num_album):
         print("###Album - " + str(j+1))
         AlbumToTrack(albums[j])
-           
-    
-    #url_Single = "https://music.bugs.co.kr/artist/" + str(artistId) + "/albums?group=SINGLE"
-    #response_Single = requests.get(url_Single)
-    #html_Single = response_Single.text    
-    #soup_Single = BeautifulSoup(html_Single, 'html.parser')
     
 
 ### MAIN ###
